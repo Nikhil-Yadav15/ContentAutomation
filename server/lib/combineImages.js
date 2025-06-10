@@ -5,7 +5,6 @@ import axios from 'axios';
 async function getRandomMusicFile() {
     const musicDir = path.join(process.cwd(), 'app', 'music');
     try {
-      // Use async readdir from fs/promises
       const musicFiles = (await fs.readdir(musicDir)).filter(file =>
         file.endsWith('.mp3') || file.endsWith('.wav')
       );
@@ -17,7 +16,6 @@ async function getRandomMusicFile() {
       const randomFile = musicFiles[Math.floor(Math.random() * musicFiles.length)];
       const filePath = path.join(musicDir, randomFile);
   
-      // Use async readFile from fs/promises
       const fileBuffer = await fs.readFile(filePath);
       const base64Music = fileBuffer.toString('base64');
   
@@ -33,13 +31,12 @@ async function createVideoApiCall(apiUrl, collectionOfImages, base64Music) {
         music: base64Music,
     };
     
-    // Make the API call
     try {
         const response = await axios.post(apiUrl, payload, {
             headers: { 'Content-Type': 'application/json', 'Cache-Control': 'no-cache',
     'Connection': 'close'},
-            timeout: 480000, // 8 minutes timeout for video processing (in milliseconds)
-            responseType: 'arraybuffer' // Ensure response is treated as binary data
+            timeout: 480000, // 8 minutes timeout 
+            responseType: 'arraybuffer'
         });
         
         if (response.status === 200) {
@@ -64,8 +61,7 @@ export default async function getfilefrompython(collectionOfImages){
     return videoContent;
     }
     catch(error){
-    
-        console.log("Got error in getfilefrompython",error);
+        console.log("Got error imagecombination",error);
     }
 }
 
