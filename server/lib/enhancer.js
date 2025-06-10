@@ -96,7 +96,6 @@ const enhanceContent = async (title, summary) => {
 
   const resultText = response.choices[0].message.content;
   try {
-    // console.log(JSON.parse(resultText));
     return JSON.parse(resultText);
   } catch (err) {
     console.error("Failed to parse JSON response:", resultText);
