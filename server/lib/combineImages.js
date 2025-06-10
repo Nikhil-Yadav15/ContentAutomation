@@ -52,7 +52,7 @@ async function createVideoApiCall(apiUrl, collectionOfImages, base64Music) {
 export default async function getfilefrompython(collectionOfImages){
     try{
     const base64Music = await getRandomMusicFile();
-    const apiUrl = 'http://127.0.0.1:5000/create-video';
+    const apiUrl = process.env.API_URL;
     const videoContent = await createVideoApiCall(
         apiUrl,
         collectionOfImages,
