@@ -18,7 +18,6 @@ export default async function makeSendVideo() {
             const { Enhanced_title, Enhanced_summary, Image_prompt } = await enhanceContent(article.title, summary);
             
             collectionOfTexts.push(Enhanced_title, Enhanced_summary);
-            console.log("\nProcessing article  :", Enhanced_title, "\n");
             const Blurred_imgBuffer_WithoutOverlap = await generateImage(Image_prompt);
             // *
             const imgBuffer_first = await overlapTitle(Blurred_imgBuffer_WithoutOverlap, Enhanced_title);
@@ -32,7 +31,6 @@ export default async function makeSendVideo() {
             await new Promise(resolve => setTimeout(resolve, 5000));
         }
         const { title: VideoTitle, description: VideoDescription } = await GenDetails(collectionOfTexts);
-        console.log("Here is complete.....")
         const videoMP4 = await getfilefrompython(collectionOfImages);
         
         return { 
@@ -50,9 +48,3 @@ export default async function makeSendVideo() {
         };
     }
 }
-
-// ? 1. texts are not very clear
-// ? 1. Add music and test it
-// ? 2. in combineImages.js: http://127.0.0.1:5000/create-video
-//  ?3. Sometimes getDetails does not provide ending }
-// ? extend music length
