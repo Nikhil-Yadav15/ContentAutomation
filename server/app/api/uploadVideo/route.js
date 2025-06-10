@@ -24,29 +24,10 @@ class YouTubeOAuth {
         OAUTH_CONFIG.REDIRECT_URI
       );
     }
-  
-    // async loadTokens() {
-    //   try {
-    //     const tokens = {
-    //       access_token: process.env.GOOGLE_ACCESS_TOKEN,
-    //       refresh_token: process.env.GOOGLE_REFRESH_TOKEN,
-    //       scope: OAUTH_CONFIG.SCOPES,
-    //       expiry_date: parseInt(process.env.GOOGLE_EXPIRY_DATE, 10),
-    //       token_type: 'Bearer'
-    //     };
-    //     this.oauth2Client.setCredentials(tokens);
-    //     return tokens;
-    //   } catch (error) {
-    //     console.error('❌ Failed to load tokens:', error.message);
-    //     return null;
-    //   }
-    // }
-  
     async refreshTokens() {
       try {
         this.oauth2Client.setCredentials({ refresh_token: process.env.GOOGLE_REFRESH_TOKEN });
         const { credentials } = await this.oauth2Client.refreshAccessToken();
-        // credentials.expiry_date = Date.now() + 600 * 1000;
         this.oauth2Client.setCredentials(credentials);
         console.log('✅ Tokens refreshed successfully');
         return credentials;
@@ -64,30 +45,12 @@ class YouTubeOAuth {
 async function uploadVideoToYouTube(videoMP4, metadata) {
     const youtubeAuth = new YouTubeOAuth();
     try {
-        // let tokens = await youtubeAuth.loadTokens();
-        // if (!tokens) {
-        // throw new Error('No tokens found. Please add your refresh token to the token file.');
-        // }
-
-        // Refresh if expired
-        // if (tokens.expiry_date && Date.now() >= tokens.expiry_date) {
         console.log('🔄 Refreshing expired tokens...');
         let tokens = await youtubeAuth.refreshTokens();
-        // }
-
         const youtube = google.youtube({
         version: 'v3',
         auth: youtubeAuth.getAuthClient()
         });
-
-        
-          // Instead of assuming videoMP4.size (which streams do not have),
-          // you can skip or log differently:
-          if (videoMP4.size) {
-            console.log(`📊 File size: ${(videoMP4.size / 1024 / 1024).toFixed(2)} MB`);
-          } else {
-            console.log(`📊 Uploading video stream...`);
-          }
 
           const { 
             title, 
@@ -98,7 +61,7 @@ async function uploadVideoToYouTube(videoMP4, metadata) {
             channelId 
           } = metadata;
           
-            console.log(`📤 Starting upload: ${title}`);
+            console.log(`📤 Starting upload...`);
         
           const uploadParams = {
             part: 'snippet,status',
@@ -111,18 +74,13 @@ async function uploadVideoToYouTube(videoMP4, metadata) {
               },
               status: {
                 privacyStatus: privacy,
-                selfDeclaredMadeForKids: true
+                selfDeclaredMadeForKids: false
               }
             },
             media: {
-              body: Readable.from(videoMP4)  // to be assigned below
+              body: Readable.from(videoMP4)
             }
           };
-        
-          if (channelId) {
-            uploadParams.requestBody.snippet.channelId = channelId;
-            console.log(`🏢 Uploading to brand account: ${channelId}`);
-          }
         
           console.log(`📊 Uploading MP4 video...`);
         
@@ -154,13 +112,6 @@ async function uploadVideoToYouTube(videoMP4, metadata) {
 
 
 export async function POST(req) {
-  // const authHeader = req.headers.get('authorization');
-
-  // // Validate the token
-  // if (!authHeader || authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
-  //   return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  // }
-
   try {
     const { success, video: videoMP4, title, description } = await makeSendVideo();
 
@@ -168,7 +119,6 @@ export async function POST(req) {
       return new Response(JSON.stringify({ error: 'Failed to get video stream' }), { status: 400 });
     }
 
-    // Prepare metadata with fallback defaults if needed
     const metadata = {
       title: title || `Mind-Blowing Update in AI, Quantum & Tech`,
       description: description || 'Discover the latest in AI, Machine Learning, Quantum Computing, and breakthrough tech—simplified! Stay ahead with cutting-edge science and innovation.',
@@ -181,16 +131,12 @@ export async function POST(req) {
         'Latest', 'FutureTech', 'Breakthroughs', 'TechUpdate', 
       'InfographicShorts'],
 
-      privacy: 'Public',    // you can customize or pass this from somewhere else
-      category: '22',
+      privacy: 'Public', 
+      category: '28',
       channelId: process.env.YOUTUBE_CHANNEL_ID || null
     };
 
-    // Pass the video stream and metadata to upload function
     const result = await uploadVideoToYouTube(videoMP4, metadata);
-
-    
-
     return NextResponse.json({ success: true, message: `Action executed.` });
   } catch (err) {
     console.error('❌ Error processing action:', err);
