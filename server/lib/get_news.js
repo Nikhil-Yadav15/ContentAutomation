@@ -262,8 +262,6 @@ class NewsExtractor {
       
       return score;
     };
-
-    // Adding mongodb old content check
     validArticles.sort((a, b) => engagementScore(b) - engagementScore(a));
     const client = await clientPromise;
     const db = client.db(process.env.MONGODB_DB);
@@ -275,20 +273,16 @@ class NewsExtractor {
         const batch = validArticles.slice(i, i + this.articlesGoing);
         const batchTitles = batch.map(article => article.title);
     
-        // Find if any of these titles already exist in the DB
         const existing = await collection.find({ title: { $in: batchTitles } }).toArray();
         const existingTitles = new Set(existing.map(a => a.title));
     
-        // If none of the batch titles exist, store and return this batch
         if (batchTitles.every(title => !existingTitles.has(title))) {
           await collection.insertMany(batch);
           return batch;
         }
-        // Otherwise, move to the next batch
         i += this.articlesGoing;
       }
     
-      // No unique batch found
       return [];
   }
 }
