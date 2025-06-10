@@ -64,11 +64,9 @@ export default async function GenDetails(collectionOfTexts) {
     const resultText = response.choices[0].message.content;
     try {
       const fixedJSON = jsonrepair(resultText);
-      console.log('GenDetails:\n',fixedJSON, '\n');
       return JSON.parse(fixedJSON);
     } catch (err) {
         console.error("Failed to parse JSON response:", resultText);
         return {title: '', description: ''};
-        // throw new Error("Invalid response format from Together AI");
     }
 }
