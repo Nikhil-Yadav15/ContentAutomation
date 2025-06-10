@@ -1,8 +1,6 @@
 import fetch from 'node-fetch';
 import sharp from 'sharp';
 
-import path from 'path';
-import fs from 'fs';
 export default async function generateImage(prompt) {
     const response = await fetch("https://api.together.xyz/v1/images/generations", {
       method: "POST",
@@ -32,9 +30,5 @@ export default async function generateImage(prompt) {
     const originalBuffer = Buffer.from(await imageRes.arrayBuffer());
   
     const blurredBuffer = await sharp(originalBuffer).blur(1).toBuffer();
-    fs.writeFileSync(path.join(process.cwd(), "server503.png"), blurredBuffer);
-    console.log("✅ server503.png For testing purpose");
-    // const finalBuffer = await addTextToImage(blurredBuffer, overlayText);
-  
     return blurredBuffer;
   }
