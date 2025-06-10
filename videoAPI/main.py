@@ -1,5 +1,3 @@
-# Use this, made some changes in moviepy: re.search(r'(\d+)x(\d+)', size_str)
-
 from flask import Flask, request, send_file, jsonify
 import os
 import tempfile
@@ -9,30 +7,22 @@ from PIL import Image
 from moviepy.editor import ImageSequenceClip, AudioFileClip
 import logging
 
-# Configure logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 app = Flask(__name__)
 
-# Configuration
-MAX_CONTENT_LENGTH = 100 * 1024 * 1024  # 100MB max file size
+MAX_CONTENT_LENGTH = 100 * 1024 * 1024
 
 app.config['MAX_CONTENT_LENGTH'] = MAX_CONTENT_LENGTH
 
-# Removed unused allowed_file function
-
 def base64_to_image(base64_string):
-    """Convert base64 string to PIL Image"""
     try:
-        # Remove data URL prefix if present
         if base64_string.startswith('data:image'):
             base64_string = base64_string.split(',')[1]
         
         image_data = base64.b64decode(base64_string)
         image = Image.open(io.BytesIO(image_data))
-        
-        # Convert to RGB if necessary
         if image.mode != 'RGB':
             image = image.convert('RGB')
             
@@ -42,53 +32,37 @@ def base64_to_image(base64_string):
         raise ValueError(f"Invalid base64 image data: {str(e)}")
 
 def resize_and_pad_image(image, target_width=1080, target_height=1920):
-    """Resize image to fit target dimensions while maintaining aspect ratio"""
-    # Calculate aspect ratios
     img_ratio = image.width / image.height
     target_ratio = target_width / target_height
     
     if img_ratio > target_ratio:
-        # Image is wider, fit to width
         new_width = target_width
         new_height = int(target_width / img_ratio)
     else:
-        # Image is taller, fit to height
         new_height = target_height
         new_width = int(target_height * img_ratio)
     
-    # Resize image
     resized_image = image.resize((new_width, new_height), Image.Resampling.LANCZOS)
     
-    # Create new image with target dimensions and black background
     padded_image = Image.new('RGB', (target_width, target_height), (0, 0, 0))
     
-    # Calculate position to center the resized image
     x_offset = (target_width - new_width) // 2
     y_offset = (target_height - new_height) // 2
     
-    # Paste the resized image onto the padded image
     padded_image.paste(resized_image, (x_offset, y_offset))
     
     return padded_image
 
 def create_video_from_images_and_audio(images_data, audio_file_path, duration_per_image=10):
-    """Create video from images and audio"""
     try:
-        # Create temporary directory for this request
         with tempfile.TemporaryDirectory() as temp_dir:
-            # Process images
             processed_images = []
             image_files = []
             
             for i, img_data in enumerate(images_data):
                 try:
-                    # Convert base64 to image
                     image = base64_to_image(img_data)
-                    
-                    # Resize and pad image
                     processed_image = resize_and_pad_image(image)
-                    
-                    # Save processed image temporarily
                     img_path = os.path.join(temp_dir, f'image_{i:04d}.jpg')
                     processed_image.save(img_path, 'JPEG', quality=85)
                     image_files.append(img_path)
@@ -101,58 +75,43 @@ def create_video_from_images_and_audio(images_data, audio_file_path, duration_pe
             
             if not image_files:
                 raise ValueError("No valid images could be processed")
-            
-            # Create video from images
             logger.info("Creating video clip from images...")
             video_clip = ImageSequenceClip(image_files, durations=[duration_per_image] * len(image_files))
             video_duration = len(image_files) * duration_per_image
             
             logger.info(f"Video duration: {video_duration}s")
             
-            # Load and process audio
             logger.info("Processing audio...")
             audio_clip = AudioFileClip(audio_file_path)
             audio_duration = audio_clip.duration
             
             logger.info(f"Audio duration: {audio_duration}s")
-            
-            # Adjust audio to match video duration
             if audio_duration < video_duration:
-                # Loop audio if it's shorter than video
                 loops_needed = int(video_duration / audio_duration) + 1
                 audio_clip = audio_clip.loop(n=loops_needed).subclip(0, video_duration)
                 logger.info(f"Audio looped {loops_needed} times to match video duration")
             else:
-                # Trim audio if it's longer than video
                 audio_clip = audio_clip.subclip(0, video_duration)
                 logger.info("Audio trimmed to match video duration")
-            
-            # Combine video and audio
             logger.info("Combining video and audio...")
             final_video = video_clip.set_audio(audio_clip)
-            
-            # Create output file
             output_path = os.path.join(temp_dir, 'output_video.mp4')
-            
-            # Write video file
+
             logger.info("Writing final video...")
             final_video.write_videofile(
                 output_path,
                 fps=24,
                 codec='libx264',
                 audio_codec='aac',
-                # temp_audiofile_path=os.path.join(temp_dir, 'temp_audio.m4a'),
                 remove_temp=True,
                 verbose=False,
-                logger=None  # Suppress moviepy logs
+                logger=None
             )
             
-            # Clean up clips
             video_clip.close()
             audio_clip.close()
             final_video.close()
             
-            # Read the created video file
             with open(output_path, 'rb') as video_file:
                 video_data = video_file.read()
             
@@ -169,15 +128,12 @@ def create_video():
     temp_video_path = None
     
     try:
-        # Check if request has JSON data
         if not request.is_json:
             logger.error("Request is not JSON")
             return jsonify({'error': 'Request must be JSON'}), 400
         
         data = request.get_json()
-        logger.info(f"Received request data: {str(data)[:200]}...")  # Log first 200 chars
-        
-        # Validate required fields
+        logger.info(f"Received request data: {str(data)[:200]}...")
         if 'images' not in data or 'music' not in data:
             logger.error("Missing required fields")
             return jsonify({'error': 'Missing required fields: images and music'}), 400
@@ -190,12 +146,9 @@ def create_video():
             return jsonify({'error': 'No images provided or invalid format'}), 400
         
         logger.info(f"Processing {len(images_data)} images")
-
-        # Create temporary file for music
         with tempfile.NamedTemporaryFile(delete=False, suffix='.mp3') as temp_music:
             temp_music_path = temp_music.name
             try:
-                # Decode music from base64
                 if music_base64.startswith('data:audio'):
                     music_base64 = music_base64.split(',')[1]
                 
@@ -204,15 +157,11 @@ def create_video():
                 temp_music.flush()
                 
                 logger.info("Music file saved temporarily")
-                
-                # Create video
                 video_data = create_video_from_images_and_audio(
                     images_data, 
                     temp_music_path, 
                     duration_per_image=10
                 )
-                
-                # Create temporary file for the video response
                 with tempfile.NamedTemporaryFile(delete=False, suffix='.mp4') as temp_video:
                     temp_video_path = temp_video.name
                     temp_video.write(video_data)
@@ -235,7 +184,6 @@ def create_video():
         return jsonify({'error': f'Unexpected error: {str(e)}'}), 500
         
     finally:
-        # Clean up temporary files in all cases
         for path in [temp_music_path, temp_video_path]:
             if path and os.path.exists(path):
                 try:
@@ -250,6 +198,3 @@ def health_check():
 @app.errorhandler(413)
 def too_large(e):
     return jsonify({'error': 'File too large. Maximum size is 100MB.'}), 413
-
-if __name__ == '__main__':
-    app.run(debug=True, host='0.0.0.0', port=5000)
