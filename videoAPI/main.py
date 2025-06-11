@@ -53,7 +53,7 @@ def resize_and_pad_image(image, target_width=1080, target_height=1920):
     
     return padded_image
 
-def create_video_from_images_and_audio(images_data, audio_file_path, duration_per_image=10):
+def create_video_from_images_and_audio(images_data, audio_file_path, duration_per_image=8):
     try:
         with tempfile.TemporaryDirectory() as temp_dir:
             processed_images = []
@@ -101,12 +101,15 @@ def create_video_from_images_and_audio(images_data, audio_file_path, duration_pe
             logger.info(f"Output path: {output_path}")
             final_video.write_videofile(
                 output_path,
-                fps=24,
+                fps=15,
                 codec='libx264',
+                preset='ultrafast',  # Faster encoding
+                bitrate='500k',  # Lower bitrate
                 audio_codec='aac',
                 remove_temp=True,
                 verbose=False,
-                logger=None
+                logger=None,
+                threads=1
             )
             
             video_clip.close()
@@ -161,7 +164,7 @@ def create_video():
                 video_data = create_video_from_images_and_audio(
                     images_data, 
                     temp_music_path, 
-                    duration_per_image=10
+                    duration_per_image=8
                 )
                 with tempfile.NamedTemporaryFile(delete=False, suffix='.mp4') as temp_video:
                     temp_video_path = temp_video.name
