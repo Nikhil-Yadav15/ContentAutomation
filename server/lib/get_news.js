@@ -15,7 +15,7 @@ class NewsExtractor {
   async extractPhysOrgNews() {
     try {
       const url = "https://phys.org/physics-news/quantum-physics/";
-      const response = await axios.get(url, { headers: HEADERS, timeout: 10000 });
+      const response = await axios.get(url, { headers: HEADERS, timeout: 20000 });
       const $ = cheerio.load(response.data);
       
       const articles = [];
@@ -113,7 +113,7 @@ class NewsExtractor {
   async extractFutureToolsNews() {
     try {
       const url = "https://www.futuretools.io/news";
-      const response = await axios.get(url, { headers: HEADERS, timeout: 10000 });
+      const response = await axios.get(url, { headers: HEADERS, timeout: 20000 });
       const $ = cheerio.load(response.data);
       
       const articles = [];
@@ -162,7 +162,7 @@ class NewsExtractor {
   async extractNewScientistNews() {
     try {
       const url = "https://www.newscientist.com/subject/technology/";
-      const response = await axios.get(url, { headers: HEADERS, timeout: 10000 });
+      const response = await axios.get(url, { headers: HEADERS, timeout: 20000 });
       const $ = cheerio.load(response.data);
       
       const articles = [];
