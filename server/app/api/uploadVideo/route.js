@@ -26,6 +26,7 @@ class YouTubeOAuth {
     }
     async refreshTokens() {
       try {
+          console.log("Here 1");
         this.oauth2Client.setCredentials({ refresh_token: process.env.GOOGLE_REFRESH_TOKEN });
         const { credentials } = await this.oauth2Client.refreshAccessToken();
         this.oauth2Client.setCredentials(credentials);
@@ -44,7 +45,9 @@ class YouTubeOAuth {
 
 async function uploadVideoToYouTube(videoMP4, metadata) {
     const youtubeAuth = new YouTubeOAuth();
+    console.log("Here 2");
     try {
+        console.log("Here 3");
         console.log('🔄 Refreshing expired tokens...');
         let tokens = await youtubeAuth.refreshTokens();
         const youtube = google.youtube({
@@ -112,12 +115,14 @@ async function uploadVideoToYouTube(videoMP4, metadata) {
 
 
 export async function POST(req) {
+    console.log("Here 4");
     const authHeader = req.headers.get('authorization');
   if (!authHeader || authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
-    
+    console.log("Here 5");
   try {
+      console.log("Here 6");
     const { success, video: videoMP4, title, description } = await makeSendVideo();
 
     if (!success || !videoMP4) {
