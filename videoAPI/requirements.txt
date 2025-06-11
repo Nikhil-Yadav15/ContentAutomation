@@ -1,3 +1,5 @@
+setuptools>=60
+wheel
 flask==3.1.1
 gunicorn==21.2.0
 moviepy==1.0.3
