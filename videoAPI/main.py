@@ -109,7 +109,6 @@ def create_video_from_images_and_audio(images_data, audio_file_path, duration_pe
                 remove_temp=True,
                 verbose=False,
                 logger=None,
-                threads=1
             )
             
             video_clip.close()
