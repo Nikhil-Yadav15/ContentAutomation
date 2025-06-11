@@ -1,0 +1,16 @@
+name: Scheduled YouTube Upload
+
+on:
+  schedule:
+    - cron: '30 1 * * *'   # 7:00 AM IST
+    - cron: '30 6 * * *'   # 12:00 PM IST
+
+jobs:
+  trigger-upload:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Call uploadVideo API
+        run: |
+          curl -X POST ${{ secrets.APP_URL }}/api/uploadVideo \
+          -H "Authorization: Bearer ${{ secrets.UPLOAD_API_KEY }}"
