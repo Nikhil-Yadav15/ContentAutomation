@@ -98,8 +98,6 @@ def create_video_from_images_and_audio(images_data, audio_file_path, duration_pe
             output_path = os.path.join(temp_dir, 'output_video.mp4')
 
             logger.info("Writing final video...")
-            logger.info(f"About to write video. Memory usage: {get_memory_usage():.2f}MB")
-            logger.info(f"Video clip duration: {final_video.duration}s")
             logger.info(f"Output path: {output_path}")
             final_video.write_videofile(
                 output_path,
