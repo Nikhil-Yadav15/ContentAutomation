@@ -1,36 +1,60 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Automated Content Creation & Upload System
 
-## Getting Started
+![Next.js](https://img.shields.io/badge/Next.js-13+-black?style=flat&logo=next.js)
+![Python](https://img.shields.io/badge/Python-3.x-blue?style=flat&logo=python)
+![Llama](https://img.shields.io/badge/LLM-Meta_Llama-FFD700?style=flat)
+![Flux](https://img.shields.io/badge/Image_Gen-Flux-9D5CFF?style=flat)
+![MoviePy](https://img.shields.io/badge/Video-MoviePy-00B4D8?style=flat)
+![YouTube API](https://img.shields.io/badge/API-YouTube-FF0000?style=flat&logo=youtube)
 
-First, run the development server:
+An automated pipeline for content creation and social media upload, built with Next.js App Router and Python video processing.
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+## ✨ Features
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+- **Automated Workflow**: Triggered via GitHub workflow calling the `/uploadVideo` API endpoint
+- **AI-Powered Content Generation**:
+  - Web content scraping
+  - Content enhancement using Meta Llama LLM
+  - Title, description, and image prompt generation
+  - AI image creation using Flux model
+- **Video Production**:
+  - Python-based video generation with MoviePy
+  - Combines generated content, images, and music
+  - Creates polished video output with transitions/effects
+- **Direct Social Media Upload**:
+  - YouTube integration via Google API
+  - Fully automated OAuth2 flow using refresh tokens
 
-You can start editing the page by modifying `app/page.js`. The page auto-updates as you edit the file.
+## 🛠️ Technical Stack
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+- **Frontend/API**: Next.js (App Router)
+- **Video Processing**: Python with MoviePy
+- **AI Models**:
+  - Meta Llama (Content generation)
+  - Flux (Image generation)
+- **APIs**:
+  - Google Client ID/Secret for authentication
+  - YouTube Data API v3
+- **Automation**:
+  - GitHub Actions workflow trigger
+  - One-time refresh token for persistent access
 
-## Learn More
+## 🔄 Workflow Process
 
-To learn more about Next.js, take a look at the following resources:
+1. **Trigger**: GitHub workflow calls `/uploadVideo` API endpoint
+2. **Content Gathering**:
+   - Collects raw content from web sources
+3. **Content Enhancement**:
+   - Processes content through Meta Llama
+   - Generates SEO-optimized title, description
+   - Creates image generation prompts
+4. **Media Creation**:
+   - Generates images using Flux model
+   - Python script processes assets with MoviePy:
+     - Combines images, text, and audio
+     - Applies transitions and effects
+     - Renders final video
+5. **Upload**:
+   - Authenticates using Google OAuth2
+   - Uploads video to YouTube automatically
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
